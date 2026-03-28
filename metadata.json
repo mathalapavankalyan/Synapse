@@ -1,0 +1,8 @@
+{
+  "name": "OmniBridge: Intent-to-Action",
+  "description": "A universal bridge converting unstructured real-world inputs into structured, life-saving actions using Gemini AI.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
