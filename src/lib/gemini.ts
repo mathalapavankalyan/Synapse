@@ -18,29 +18,40 @@ export interface ActionPlan {
   }[];
 }
 
-export const processIntent = async (input: string, imageBase64?: string): Promise<ActionPlan> => {
+export interface MediaInput {
+  data: string;
+  mimeType: string;
+}
+
+export const processIntent = async (
+  input: string, 
+  media?: MediaInput[]
+): Promise<ActionPlan> => {
   const model = "gemini-3-flash-preview";
   
   const prompt = `
     You are OmniBridge, a universal intent-to-action engine for societal benefit.
-    Analyze the provided input (text and/or image) which may be messy, unstructured, or real-world data (medical history, disaster photo, traffic report, etc.).
+    Analyze the provided input (text, image, audio, and/or video) which may be messy, unstructured, or real-world data (medical history, disaster footage, emergency voice calls, traffic reports, etc.).
     
     Convert this into a structured, life-saving action plan.
     
     Rules:
     1. Identify the category and urgency.
-    2. Extract key structured data points.
+    2. Extract key structured data points from all provided modalities.
     3. Provide clear, immediate actions.
     4. Suggest verified resources or types of resources needed.
   `;
 
   const contents: any[] = [{ text: input || "Analyze this input for societal benefit." }];
-  if (imageBase64) {
-    contents.push({
-      inlineData: {
-        mimeType: "image/jpeg",
-        data: imageBase64.split(",")[1] || imageBase64,
-      },
+  
+  if (media && media.length > 0) {
+    media.forEach(m => {
+      contents.push({
+        inlineData: {
+          mimeType: m.mimeType,
+          data: m.data.split(",")[1] || m.data,
+        },
+      });
     });
   }
 

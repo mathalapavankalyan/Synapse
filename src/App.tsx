@@ -9,38 +9,57 @@ import {
   CheckCircle2, 
   ArrowRight, 
   Camera, 
+  Mic,
+  Video,
   FileText,
   Loader2,
-  Info
+  Info,
+  X
 } from 'lucide-react';
-import { processIntent, ActionPlan } from './lib/gemini';
+import { processIntent, ActionPlan, MediaInput } from './lib/gemini';
 
 export default function App() {
   const [input, setInput] = useState('');
-  const [image, setImage] = useState<string | null>(null);
+  const [mediaFiles, setMediaFiles] = useState<(MediaInput & { type: 'image' | 'audio' | 'video', name: string })[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<ActionPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'audio' | 'video') => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImage(reader.result as string);
+        setMediaFiles(prev => [
+          ...prev, 
+          { 
+            data: reader.result as string, 
+            mimeType: file.type, 
+            type,
+            name: file.name
+          }
+        ]);
       };
       reader.readAsDataURL(file);
     }
+    // Reset input value so same file can be uploaded again if removed
+    e.target.value = '';
+  };
+
+  const removeMedia = (index: number) => {
+    setMediaFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleProcess = async () => {
-    if (!input && !image) return;
+    if (!input && mediaFiles.length === 0) return;
     
     setIsProcessing(true);
     setError(null);
     try {
-      const plan = await processIntent(input, image || undefined);
+      const plan = await processIntent(input, mediaFiles.map(({ data, mimeType }) => ({ data, mimeType })));
       setResult(plan);
     } catch (err) {
       console.error(err);
@@ -52,7 +71,7 @@ export default function App() {
 
   const reset = () => {
     setInput('');
-    setImage(null);
+    setMediaFiles([]);
     setResult(null);
     setError(null);
   };
@@ -80,7 +99,7 @@ export default function App() {
               Bridge the gap between <span className="italic">chaos</span> and <span className="text-[var(--accent)]">action</span>.
             </h2>
             <p className="text-[var(--muted)] text-lg leading-relaxed">
-              Upload medical records, disaster photos, or messy notes. OmniBridge converts unstructured human intent into life-saving protocols.
+              Upload medical records, disaster photos, emergency voice calls, or messy notes. OmniBridge converts unstructured human intent into life-saving protocols.
             </p>
           </div>
 
@@ -100,35 +119,85 @@ export default function App() {
                 >
                   <Camera size={20} />
                 </button>
+                <button 
+                  onClick={() => audioInputRef.current?.click()}
+                  className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                  title="Upload Audio"
+                >
+                  <Mic size={20} />
+                </button>
+                <button 
+                  onClick={() => videoInputRef.current?.click()}
+                  className="p-3 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                  title="Upload Video"
+                >
+                  <Video size={20} />
+                </button>
               </div>
               <input 
                 type="file" 
                 ref={fileInputRef} 
-                onChange={handleImageUpload} 
+                onChange={(e) => handleFileUpload(e, 'image')} 
                 className="hidden" 
                 accept="image/*" 
               />
+              <input 
+                type="file" 
+                ref={audioInputRef} 
+                onChange={(e) => handleFileUpload(e, 'audio')} 
+                className="hidden" 
+                accept="audio/*" 
+              />
+              <input 
+                type="file" 
+                ref={videoInputRef} 
+                onChange={(e) => handleFileUpload(e, 'video')} 
+                className="hidden" 
+                accept="video/*" 
+              />
             </div>
 
-            {image && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative w-full aspect-video rounded-2xl overflow-hidden border border-[var(--border)]"
-              >
-                <img src={image} alt="Uploaded context" className="w-full h-full object-cover" />
-                <button 
-                  onClick={() => setImage(null)}
-                  className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
-                >
-                  <ArrowRight className="rotate-45" size={16} />
-                </button>
-              </motion.div>
+            {mediaFiles.length > 0 && (
+              <div className="grid grid-cols-2 gap-4">
+                {mediaFiles.map((file, idx) => (
+                  <motion.div 
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative group border border-[var(--border)] rounded-xl overflow-hidden bg-white"
+                  >
+                    {file.type === 'image' && (
+                      <img src={file.data} alt={file.name} className="w-full h-32 object-cover" />
+                    )}
+                    {file.type === 'audio' && (
+                      <div className="w-full h-32 flex flex-col items-center justify-center bg-blue-50 text-blue-600 p-4">
+                        <Mic size={32} className="mb-2" />
+                        <span className="text-[10px] font-mono truncate w-full text-center px-2">{file.name}</span>
+                        <audio src={file.data} controls className="w-full mt-2 h-8" />
+                      </div>
+                    )}
+                    {file.type === 'video' && (
+                      <div className="w-full h-32 bg-black relative">
+                        <video src={file.data} className="w-full h-full object-contain" />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <Video size={32} className="text-white/50" />
+                        </div>
+                      </div>
+                    )}
+                    <button 
+                      onClick={() => removeMedia(idx)}
+                      className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={14} />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
             )}
 
             <button
               onClick={handleProcess}
-              disabled={isProcessing || (!input && !image)}
+              disabled={isProcessing || (!input && mediaFiles.length === 0)}
               className="w-full py-4 bg-[var(--ink)] text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-black transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
             >
               {isProcessing ? (

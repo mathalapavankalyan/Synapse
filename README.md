@@ -1,20 +1,67 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# OmniBridge: Intent-to-Action ⚡️
 
-# Run and deploy your AI Studio app
+**OmniBridge** is a universal, Gemini-powered intent-to-action engine designed for societal benefit. It acts as a bridge between unstructured, "messy" real-world data and structured, life-saving protocols.
 
-This contains everything you need to run your app locally.
+## 🌟 The Vision
+In emergency situations, information is often chaotic—a frantic voice call, a shaky video of a disaster, a blurry photo of a medical report, or a wall of unstructured text. OmniBridge uses the power of Gemini AI to instantly parse this chaos and convert it into a verified, structured action plan.
 
-View your app in AI Studio: https://ai.studio/apps/378bc30c-6d78-46e6-b626-c8e73691f86c
+## 🚀 Key Features
+- **Multimodal Input Support**: Seamlessly process Text, Images, Audio, and Video.
+- **Intelligent Categorization**: Automatically identifies the domain (Medical, Disaster, Safety, Logistics) and assigns an urgency level (Critical to Low).
+- **Structured Data Extraction**: Converts "messy" inputs into clean, actionable parameters (e.g., extracting vital signs from a medical record or coordinates from a disaster report).
+- **Life-Saving Protocols**: Generates a step-by-step immediate action plan based on the analyzed intent.
+- **Verified Resources**: Suggests official resources, contacts, and links relevant to the situation.
+- **Privacy-First Design**: Built with a focus on secure, real-time processing.
 
-## Run Locally
+## 🛠 Tech Stack
+- **Frontend**: React 19, Tailwind CSS 4, Lucide Icons, Motion (for fluid animations).
+- **Backend**: Express.js (serving as a robust static host and API proxy).
+- **AI Engine**: Google Gemini 3 series via the `@google/genai` SDK.
+- **Deployment**: Optimized for Google Cloud Run.
 
-**Prerequisites:**  Node.js
+## 📦 Installation & Local Development
 
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/mathalapavankalyan/prompt-for-build.git
+   cd prompt-for-build
+   ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables**:
+   Create a `.env` file in the root directory and add your Gemini API Key:
+   ```env
+   GEMINI_API_KEY=your_api_key_here
+   ```
+
+4. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+   The app will be available at `http://localhost:3000`.
+
+## ☁️ Deployment to Google Cloud
+
+This application is production-ready for **Google Cloud Run**.
+
+### Option 1: AI Studio (Recommended)
+1. Click the **"Deploy"** button in the AI Studio interface.
+2. Select **"Deploy to Cloud Run"**.
+3. Follow the prompts to authorize and launch.
+
+### Option 2: Manual Deployment
+1. Ensure you have the [Google Cloud CLI](https://cloud.google.com/sdk/docs/install) installed.
+2. Run the following command:
+   ```bash
+   gcloud run deploy omnibridge --source . --allow-unauthenticated
+   ```
+
+## 📄 License
+This project is licensed under the Apache-2.0 License.
+
+---
+*Built for societal benefit using Google Gemini AI.*
